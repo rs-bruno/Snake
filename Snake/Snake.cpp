@@ -109,6 +109,7 @@ HRESULT MainApp::Initialize()
             int yPx = static_cast<int>(ceil(480.f * dpi / 96.f));
             int blockSize = _gameController.GetBlockSize();
             _gameController.ResizeWorld(xPx / blockSize, yPx / blockSize);
+            _gameController.InitializeSnake(7);
 
             SetWindowPos(
                 m_hwnd,
@@ -183,6 +184,7 @@ void MainApp::DiscardDeviceResources()
 }
 bool MainApp::OnUpdate()
 {
+
     return _gameController.Update();
 }
 HRESULT MainApp::OnRender()
@@ -192,15 +194,18 @@ HRESULT MainApp::OnRender()
     hr = CreateDeviceResources();
     if (SUCCEEDED(hr))
     {
+        if (!_firstPaint && !OnUpdate())
+            return hr;
+
+        _firstPaint = false;
+
         m_pRenderTarget->BeginDraw();
         m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
         m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
 
         int blockSize = _gameController.GetBlockSize();
-        int blocksX = _gameController.GetWorldSizeX();
-        int blocksY = _gameController.GetWorldSizeY();
-        int width = blocksX * blockSize;
-        int height = blocksY * blockSize;
+        int width = _gameController.GetWorldSizeX() * blockSize;
+        int height = _gameController.GetWorldSizeY() * blockSize;
 
         // Draw a grid background.
         for (int x = 0; x < width; x += blockSize)
@@ -222,9 +227,9 @@ HRESULT MainApp::OnRender()
             );
         }
 
+        // Draw the snake body.
         for (auto& snakeBlock : _gameController._snakeBody)
         {
-            // Draw a snake block.
             D2D1_RECT_F rectangle1 = D2D1::RectF(
                 snakeBlock.coordX * blockSize,
                 snakeBlock.coordY * blockSize,
@@ -242,6 +247,7 @@ HRESULT MainApp::OnRender()
             DiscardDeviceResources();
         }
     }
+
     return hr;
 }
 void MainApp::OnResize(UINT width, UINT height)
@@ -384,10 +390,7 @@ LRESULT CALLBACK MainApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
             case WM_PAINT:
             {
-                if (pDemoApp->OnUpdate())
-                {
-                    pDemoApp->OnRender();
-                }
+                pDemoApp->OnRender();
             }
             result = 0;
             wasHandled = true;

@@ -12,23 +12,8 @@ Direction Opposite(Direction dir)
 	}
 }
 
-void GameController::InitializeSnake(int len)
-{
-	_snakeDir = Direction::RIGHT;
-	_snakeBody.clear();
-	Position _snakeStartingHead;
-	_snakeStartingHead.coordX = _worldSizeX / 2;
-	_snakeStartingHead.coordY = _worldSizeY / 2;
-	_snakeBody.push_back(_snakeStartingHead);
-	for (int i = 0; i < len - 1; ++i)
-	{
-		_snakeStartingHead.coordX -= 1;
-		_snakeBody.push_back(_snakeStartingHead);
-	}
-}
 GameController::GameController()
 {
-	InitializeSnake(2);
 }
 void GameController::ChangeState(CycleState newState)
 {
@@ -37,7 +22,7 @@ void GameController::ChangeState(CycleState newState)
 		if (_state == CycleState::STOPPED)
 		{
 			_baseSpeed = 1.0f;
-			InitializeSnake(5);
+			InitializeSnake(7);
 		}
 		_state = newState;
 		return;
@@ -94,6 +79,20 @@ void GameController::ResizeWorld(int blocksX, int blocksY)
 {
 	_worldSizeX = blocksX;
 	_worldSizeY = blocksY;
+}
+void GameController::InitializeSnake(int len)
+{
+	_snakeDir = Direction::RIGHT;
+	_snakeBody.clear();
+	Position _snakeStartingHead;
+	_snakeStartingHead.coordX = _worldSizeX / 2;
+	_snakeStartingHead.coordY = _worldSizeY / 2;
+	_snakeBody.push_back(_snakeStartingHead);
+	for (int i = 0; i < len - 1; ++i)
+	{
+		_snakeStartingHead.coordX -= 1;
+		_snakeBody.push_back(_snakeStartingHead);
+	}
 }
 int GameController::GetBlockSize() const
 {

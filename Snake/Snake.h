@@ -14,6 +14,7 @@ private:
     ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
     ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
     GameController _gameController;
+    bool _firstPaint = true;
 public:
     MainApp();
     ~MainApp();

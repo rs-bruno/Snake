@@ -38,7 +38,7 @@ private:
     CycleState _state = CycleState::STOPPED;
     FILETIME _lastMove = {};
     float _baseSpeed = 1.0f;
-    float _userSpeed = 10.0f; // multiplies _baseSpeed
+    float _userSpeed = 15.0f; // multiplies _baseSpeed
     Direction _snakeDir = Direction::RIGHT;
 public:
     list<Position> _snakeBody;
@@ -51,9 +51,8 @@ public:
     void ChangeUserSpeed(float newUserSpeed); // speed = 1 ==> snakes moves at 1 block/sec
     bool Update(); // returns true if a frame redraw is required
     void ResizeWorld(int blocksX, int blocksY);
+    void InitializeSnake(int len);
     int GetBlockSize() const;
     int GetWorldSizeX() const;
     int GetWorldSizeY() const;
-private:
-    void InitializeSnake(int len);
 };
