@@ -30,6 +30,22 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
+// TODO: replace by a function that takes an objetive client size and returns a windows size
+bool TryGetBorderHeader(HWND m_hwnd, int& border, int& header)
+{
+    // Get the window and client dimensions
+    RECT wndRect, clRect;
+    if (!GetWindowRect(m_hwnd, &wndRect))
+        return false;
+    if (!GetClientRect(m_hwnd, &clRect))
+        return false;
+
+    // Edges
+    border = (wndRect.right - wndRect.left) - clRect.right;
+    header = (wndRect.bottom - wndRect.top) - clRect.bottom;
+    return true;
+}
+
 // Main app implementation
 MainApp::MainApp() :
     m_hwnd(NULL),
@@ -104,20 +120,19 @@ HRESULT MainApp::Initialize()
             // obtain the window's DPI, and use it to scale the window size.
             float dpi = GetDpiForWindow(m_hwnd);
 
-            // 640x480 dipxs in equivalent pixels
-            int xPx = static_cast<int>(ceil(640.f * dpi / 96.f));
-            int yPx = static_cast<int>(ceil(480.f * dpi / 96.f));
-            int blockSize = _gameController.GetBlockSize();
-            _gameController.ResizeWorld(xPx / blockSize, yPx / blockSize);
-            _gameController.InitializeSnake(7);
+            int blockSizePx = static_cast<int>(ceil(_gameController.GetBlockSize() * (dpi / 96.f)));
+            int xPx = _gameController.GetWorldSizeX() * blockSizePx;
+            int yPx = _gameController.GetWorldSizeY() * blockSizePx;
+            int border, header;
+            TryGetBorderHeader(m_hwnd, border, header);
 
             SetWindowPos(
                 m_hwnd,
                 NULL,
                 NULL,
                 NULL,
-                xPx,
-                yPx,
+                xPx + border,
+                yPx + header,
                 SWP_NOMOVE);
             ShowWindow(m_hwnd, SW_SHOWNORMAL);
             UpdateWindow(m_hwnd);
@@ -207,14 +222,26 @@ HRESULT MainApp::OnRender()
         int width = _gameController.GetWorldSizeX() * blockSize;
         int height = _gameController.GetWorldSizeY() * blockSize;
 
-        // Draw a grid background.
+        // Draw the snake body.
+        for (auto& snakeBlock : _gameController._snakeBody)
+        {
+            D2D1_RECT_F rectangle1 = D2D1::RectF(
+                snakeBlock.x * blockSize,
+                snakeBlock.y * blockSize,
+                (snakeBlock.x + 1) * blockSize,
+                (snakeBlock.y + 1) * blockSize
+            );
+            m_pRenderTarget->FillRectangle(&rectangle1, m_pCornflowerBlueBrush);
+        }
+
+        // Draw a grid.
         for (int x = 0; x < width; x += blockSize)
         {
             m_pRenderTarget->DrawLine(
                 D2D1::Point2F(static_cast<FLOAT>(x), 0.0f),
                 D2D1::Point2F(static_cast<FLOAT>(x), height),
                 m_pLightSlateGrayBrush,
-                0.5f
+                0.75f
             );
         }
         for (int y = 0; y < height; y += blockSize)
@@ -225,18 +252,6 @@ HRESULT MainApp::OnRender()
                 m_pLightSlateGrayBrush,
                 0.5f
             );
-        }
-
-        // Draw the snake body.
-        for (auto& snakeBlock : _gameController._snakeBody)
-        {
-            D2D1_RECT_F rectangle1 = D2D1::RectF(
-                snakeBlock.coordX * blockSize,
-                snakeBlock.coordY * blockSize,
-                (snakeBlock.coordX + 1) * blockSize,
-                (snakeBlock.coordY + 1) * blockSize
-            );
-            m_pRenderTarget->FillRectangle(&rectangle1, m_pCornflowerBlueBrush);
         }
         
         hr = m_pRenderTarget->EndDraw();
@@ -274,8 +289,8 @@ void MainApp::OnResizing(WPARAM wParam, LPRECT rectp)
     GetClientRect(m_hwnd, &clRect);
 
     // Edges
-    int border = (wndRect.right - wndRect.left) - clRect.right;
-    int header = (wndRect.bottom - wndRect.top) - clRect.bottom;
+    int border, header;
+    TryGetBorderHeader(m_hwnd, border, header);
 
     // Offered client width and height
     int width = (rectp->right - rectp->left) - border;

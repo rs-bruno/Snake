@@ -11,8 +11,8 @@ enum CycleState
 };
 struct Position
 {
-    int coordX;
-    int coordY;
+    int x;
+    int y;
 }; 
 enum Direction
 {
@@ -32,9 +32,9 @@ enum Fruit
 class GameController
 {
 private:
-    int _blockSize = 20; // dipx
-    int _worldSizeX = 45; // blocks
-    int _worldSizeY = 45;
+    int _blockSize = 25; // dipx
+    int _worldSizeX = 25; // blocks
+    int _worldSizeY = 25;
     CycleState _state = CycleState::STOPPED;
     FILETIME _lastMove = {};
     float _baseSpeed = 1.0f;

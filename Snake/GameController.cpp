@@ -14,6 +14,7 @@ Direction Opposite(Direction dir)
 
 GameController::GameController()
 {
+	InitializeSnake(7);
 }
 void GameController::ChangeState(CycleState newState)
 {
@@ -50,24 +51,25 @@ bool GameController::Update()
 			return false;
 		_lastMove = now;
 
+		// Setup next head position
 		auto _snakeHead = _snakeBody.front();
 		switch (_snakeDir)
 		{
 		case Direction::UP:
-			_snakeHead.coordY = (_snakeHead.coordY - 1);
+			_snakeHead.y = (_snakeHead.y - 1);
 			break;
 		case Direction::DOWN:
-			_snakeHead.coordY = (_snakeHead.coordY + 1);
+			_snakeHead.y = (_snakeHead.y + 1);
 			break;
 		case Direction::LEFT:
-			_snakeHead.coordX = (_snakeHead.coordX - 1);
+			_snakeHead.x = (_snakeHead.x - 1);
 			break;
 		default:
-			_snakeHead.coordX = (_snakeHead.coordX + 1);
+			_snakeHead.x = (_snakeHead.x + 1);
 			break;
 		}
-		_snakeHead.coordX = _snakeHead.coordX < 0 ? (_worldSizeX - 1) : _snakeHead.coordX % _worldSizeX;
-		_snakeHead.coordY = _snakeHead.coordY < 0 ? (_worldSizeY - 1) : _snakeHead.coordY % _worldSizeY;
+		_snakeHead.x = _snakeHead.x < 0 ? (_worldSizeX - 1) : _snakeHead.x % _worldSizeX;
+		_snakeHead.y = _snakeHead.y < 0 ? (_worldSizeY - 1) : _snakeHead.y % _worldSizeY;
 		_snakeBody.push_front(_snakeHead);
 		_snakeBody.pop_back();
 
@@ -85,12 +87,12 @@ void GameController::InitializeSnake(int len)
 	_snakeDir = Direction::RIGHT;
 	_snakeBody.clear();
 	Position _snakeStartingHead;
-	_snakeStartingHead.coordX = _worldSizeX / 2;
-	_snakeStartingHead.coordY = _worldSizeY / 2;
+	_snakeStartingHead.x = _worldSizeX / 2;
+	_snakeStartingHead.y = _worldSizeY / 2;
 	_snakeBody.push_back(_snakeStartingHead);
 	for (int i = 0; i < len - 1; ++i)
 	{
-		_snakeStartingHead.coordX -= 1;
+		_snakeStartingHead.x -= 1;
 		_snakeBody.push_back(_snakeStartingHead);
 	}
 }
