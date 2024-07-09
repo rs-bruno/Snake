@@ -26,6 +26,7 @@
 // C++ standard library
 #include <list>
 #include <map>
+#include <random>
 
 #define MS_TO_100NS(ms) ((REFERENCE_TIME)(ms) * 10000)
 

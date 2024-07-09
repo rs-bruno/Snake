@@ -12,6 +12,13 @@ Direction Opposite(Direction dir)
 	}
 }
 
+bool operator==(const Position& l, const Position& r) {
+	return (l.x == r.x && l.y == r.y);
+}
+bool operator<(const Position& l, const Position& r) {
+	return (l.x < r.x || (l.x == r.x && l.y < r.y));
+}
+
 GameController::GameController()
 {
 	InitializeSnake(7);
@@ -24,6 +31,7 @@ void GameController::ChangeState(CycleState newState)
 		{
 			_baseSpeed = 1.0f;
 			InitializeSnake(7);
+			SpawnFruit();
 		}
 		_state = newState;
 		return;
@@ -71,7 +79,16 @@ bool GameController::Update()
 		_snakeHead.x = _snakeHead.x < 0 ? (_worldSizeX - 1) : _snakeHead.x % _worldSizeX;
 		_snakeHead.y = _snakeHead.y < 0 ? (_worldSizeY - 1) : _snakeHead.y % _worldSizeY;
 		_snakeBody.push_front(_snakeHead);
-		_snakeBody.pop_back();
+
+		if (_fruits.count(_snakeHead) > 0)
+		{
+			_fruits.erase(_snakeHead);
+			SpawnFruit();
+		} 
+		else
+		{
+			_snakeBody.pop_back();
+		}
 
 		return true;
 	}
@@ -81,6 +98,23 @@ void GameController::ResizeWorld(int blocksX, int blocksY)
 {
 	_worldSizeX = blocksX;
 	_worldSizeY = blocksY;
+
+	// Create a new fruit foreach fruit that falls outside the new world
+	vector<Position> toRemove;
+	for (auto& fruit : _fruits)
+	{
+		auto& pos = fruit.first;
+		if (pos.x >= _worldSizeX || pos.y >= _worldSizeY)
+			toRemove.push_back(pos);
+	}
+	for (auto& pos : toRemove)
+	{
+		_fruits.erase(pos);
+	}
+	for (int i = 0; i < toRemove.size(); ++i)
+	{
+		SpawnFruit();
+	}
 }
 void GameController::InitializeSnake(int len)
 {
@@ -107,4 +141,15 @@ int GameController::GetWorldSizeX() const
 int GameController::GetWorldSizeY() const
 {
 	return _worldSizeY;
+}
+void GameController::SpawnFruit()
+{
+	std::uniform_int_distribution<int> distX(0, _worldSizeX - 1);
+	std::uniform_int_distribution<int> distY(0, _worldSizeY - 1);
+	Position tentativePos{ distX(_rnd), distY(_rnd) };
+	while (std::find(_snakeBody.begin(), _snakeBody.end(), tentativePos) != _snakeBody.end() || _fruits.count(tentativePos) > 0)
+	{
+		tentativePos = { distX(_rnd), distY(_rnd) };
+	}
+	_fruits.insert({ tentativePos, Fruit::GROWTH_FRUIT });
 }

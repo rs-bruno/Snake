@@ -13,6 +13,7 @@ private:
     ID2D1HwndRenderTarget* m_pRenderTarget;
     ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
     ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
+    ID2D1SolidColorBrush* m_pRedBrush;
     GameController _gameController;
     bool _firstPaint = true;
 public:

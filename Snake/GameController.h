@@ -32,6 +32,7 @@ enum Fruit
 class GameController
 {
 private:
+    std::random_device _rnd;
     int _blockSize = 25; // dipx
     int _worldSizeX = 25; // blocks
     int _worldSizeY = 25;
@@ -55,4 +56,7 @@ public:
     int GetBlockSize() const;
     int GetWorldSizeX() const;
     int GetWorldSizeY() const;
+
+private:
+    void SpawnFruit();
 };

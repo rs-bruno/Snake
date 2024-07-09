@@ -187,6 +187,14 @@ HRESULT MainApp::CreateDeviceResources()
                 &m_pCornflowerBlueBrush
             );
         }
+        if (SUCCEEDED(hr))
+        {
+            // Create a red brush.
+            hr = m_pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::Red),
+                &m_pRedBrush
+            );
+        }
     }
 
     return hr;
@@ -221,6 +229,19 @@ HRESULT MainApp::OnRender()
         int blockSize = _gameController.GetBlockSize();
         int width = _gameController.GetWorldSizeX() * blockSize;
         int height = _gameController.GetWorldSizeY() * blockSize;
+
+        // Draw the fruits.
+        for (auto& fruit : _gameController._fruits)
+        {
+            auto fruitBlock = fruit.first;
+            D2D1_RECT_F rectangle1 = D2D1::RectF(
+                fruitBlock.x * blockSize,
+                fruitBlock.y * blockSize,
+                (fruitBlock.x + 1) * blockSize,
+                (fruitBlock.y + 1) * blockSize
+            );
+            m_pRenderTarget->FillRectangle(&rectangle1, m_pRedBrush);
+        }
 
         // Draw the snake body.
         for (auto& snakeBlock : _gameController._snakeBody)
