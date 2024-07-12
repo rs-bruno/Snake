@@ -14,8 +14,9 @@ private:
     ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
     ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
     ID2D1SolidColorBrush* m_pRedBrush;
+    ID2D1SolidColorBrush* m_pGreenBrush;
+    ID2D1SolidColorBrush* m_pBlueBrush;
     GameController _gameController;
-    bool _firstPaint = true;
 public:
     MainApp();
     ~MainApp();
@@ -35,9 +36,6 @@ private:
 
     // Release device-dependent resource.
     void DiscardDeviceResources();
-
-    // Updates the game state, returns true if something changed
-    bool OnUpdate();
 
     // Draw content.
     HRESULT OnRender();

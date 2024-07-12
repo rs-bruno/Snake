@@ -25,7 +25,8 @@ Direction Opposite(Direction dir);
 enum Fruit
 {
     GROWTH_FRUIT,
-    SPEED_FRUIT,
+    SLOW_FRUIT,
+    LIFE_FRUIT,
 };
 
 // Game controller class
@@ -37,10 +38,14 @@ private:
     int _worldSizeX = 25; // blocks
     int _worldSizeY = 25;
     CycleState _state = CycleState::STOPPED;
+    FILETIME _lastUpdate = {};
     FILETIME _lastMove = {};
+    REFERENCE_TIME _specialFruitTimer = {};
+    REFERENCE_TIME _speedUpTimer = {};
     float _baseSpeed = 1.0f;
-    float _userSpeed = 15.0f; // multiplies _baseSpeed
+    float _userSpeed = 10.0f; // multiplies _baseSpeed
     Direction _snakeDir = Direction::RIGHT;
+    int lifes = 1;
 public:
     list<Position> _snakeBody;
     map<Position, Fruit> _fruits;
@@ -50,7 +55,7 @@ public:
     void ChangeState(CycleState newState);
     void ChangeHeadingDirection(Direction newDirection);
     void ChangeUserSpeed(float newUserSpeed); // speed = 1 ==> snakes moves at 1 block/sec
-    bool Update(); // returns true if a frame redraw is required
+    void Update(); // returns true if a frame redraw is required
     void ResizeWorld(int blocksX, int blocksY);
     void InitializeSnake(int len);
     int GetBlockSize() const;
@@ -58,5 +63,5 @@ public:
     int GetWorldSizeY() const;
 
 private:
-    void SpawnFruit();
+    void SpawnFruit(Fruit type = Fruit::GROWTH_FRUIT);
 };

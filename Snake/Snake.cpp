@@ -195,6 +195,22 @@ HRESULT MainApp::CreateDeviceResources()
                 &m_pRedBrush
             );
         }
+        if (SUCCEEDED(hr))
+        {
+            // Create a green brush.
+            hr = m_pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::GreenYellow),
+                &m_pGreenBrush
+            );
+        }
+        if (SUCCEEDED(hr))
+        {
+            // Create a blue brush.
+            hr = m_pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::DarkSlateBlue),
+                &m_pBlueBrush
+            );
+        }
     }
 
     return hr;
@@ -204,11 +220,9 @@ void MainApp::DiscardDeviceResources()
     SafeRelease(&m_pRenderTarget);
     SafeRelease(&m_pLightSlateGrayBrush);
     SafeRelease(&m_pCornflowerBlueBrush);
-}
-bool MainApp::OnUpdate()
-{
-
-    return _gameController.Update();
+    SafeRelease(&m_pRedBrush);
+    SafeRelease(&m_pGreenBrush);
+    SafeRelease(&m_pBlueBrush);
 }
 HRESULT MainApp::OnRender()
 {
@@ -217,10 +231,7 @@ HRESULT MainApp::OnRender()
     hr = CreateDeviceResources();
     if (SUCCEEDED(hr))
     {
-        if (!_firstPaint && !OnUpdate())
-            return hr;
-
-        _firstPaint = false;
+        _gameController.Update();
 
         m_pRenderTarget->BeginDraw();
         m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
@@ -234,13 +245,18 @@ HRESULT MainApp::OnRender()
         for (auto& fruit : _gameController._fruits)
         {
             auto fruitBlock = fruit.first;
+            auto fuitColor =
+                fruit.second == Fruit::GROWTH_FRUIT ? m_pRedBrush :
+                fruit.second == Fruit::LIFE_FRUIT ? m_pGreenBrush :
+                fruit.second == Fruit::SLOW_FRUIT ? m_pBlueBrush :
+                m_pLightSlateGrayBrush;
             D2D1_RECT_F rectangle1 = D2D1::RectF(
                 fruitBlock.x * blockSize,
                 fruitBlock.y * blockSize,
                 (fruitBlock.x + 1) * blockSize,
                 (fruitBlock.y + 1) * blockSize
             );
-            m_pRenderTarget->FillRectangle(&rectangle1, m_pRedBrush);
+            m_pRenderTarget->FillRectangle(&rectangle1, fuitColor);
         }
 
         // Draw the snake body.

@@ -21,7 +21,7 @@ bool operator<(const Position& l, const Position& r) {
 
 GameController::GameController()
 {
-	InitializeSnake(7);
+	InitializeSnake(2);
 }
 void GameController::ChangeState(CycleState newState)
 {
@@ -30,7 +30,8 @@ void GameController::ChangeState(CycleState newState)
 		if (_state == CycleState::STOPPED)
 		{
 			_baseSpeed = 1.0f;
-			InitializeSnake(7);
+			_specialFruitTimer = {};
+			InitializeSnake(2);
 			SpawnFruit();
 		}
 		_state = newState;
@@ -49,14 +50,32 @@ void GameController::ChangeUserSpeed(float newUserSpeed)
 	if (newUserSpeed > 0.5f)
 		_userSpeed = newUserSpeed;
 }
-bool GameController::Update()
+void GameController::Update()
 {
+	FILETIME now = {};
+	GetSystemTimeAsFileTime(&now);
+	REFERENCE_TIME elapsed = now - _lastUpdate;
+	_lastUpdate = now;
+
 	if (_state == CycleState::RUNNING)
 	{
-		FILETIME now = {};
-		GetSystemTimeAsFileTime(&now);
+		_specialFruitTimer += elapsed;
+		_speedUpTimer += elapsed;
+		if (_speedUpTimer > MS_TO_100NS(2000))
+		{
+			_baseSpeed += 0.1f;
+			_speedUpTimer = {};
+		}
+		if (_specialFruitTimer > MS_TO_100NS(10 * 1000))
+		{
+			std::uniform_int_distribution<int> dist(0, 100);
+			Fruit type = dist(_rnd) < 25 ? Fruit::LIFE_FRUIT : Fruit::SLOW_FRUIT;
+			SpawnFruit(type);
+			_specialFruitTimer = {};
+		}
+
 		if (now - _lastMove < MS_TO_100NS(1000 / (_baseSpeed * _userSpeed)))
-			return false;
+			return;
 		_lastMove = now;
 
 		// Setup next head position
@@ -82,17 +101,30 @@ bool GameController::Update()
 
 		if (_fruits.count(_snakeHead) > 0)
 		{
+			Fruit type = _fruits[_snakeHead];
+			if (type == Fruit::GROWTH_FRUIT)
+			{
+				SpawnFruit(); // spawn before erasing current fruit so the new is in a different location
+			}
+			else
+			{
+				if (type == Fruit::LIFE_FRUIT)
+				{
+					lifes++;
+				}
+				else if (type == Fruit::SLOW_FRUIT)
+				{
+					_baseSpeed = 1.0f;
+				}
+				_snakeBody.pop_back(); // these fruits should mantain snake size
+			}
 			_fruits.erase(_snakeHead);
-			SpawnFruit();
 		} 
 		else
 		{
 			_snakeBody.pop_back();
 		}
-
-		return true;
 	}
-	return false;
 }
 void GameController::ResizeWorld(int blocksX, int blocksY)
 {
@@ -101,19 +133,23 @@ void GameController::ResizeWorld(int blocksX, int blocksY)
 
 	// Create a new fruit foreach fruit that falls outside the new world
 	vector<Position> toRemove;
+	vector<Fruit> toRemoveFruits;
 	for (auto& fruit : _fruits)
 	{
 		auto& pos = fruit.first;
 		if (pos.x >= _worldSizeX || pos.y >= _worldSizeY)
+		{
 			toRemove.push_back(pos);
+			toRemoveFruits.push_back(fruit.second);
+		}
 	}
 	for (auto& pos : toRemove)
 	{
 		_fruits.erase(pos);
 	}
-	for (int i = 0; i < toRemove.size(); ++i)
+	for (int i = 0; i < toRemoveFruits.size(); ++i)
 	{
-		SpawnFruit();
+		SpawnFruit(toRemoveFruits[i]);
 	}
 }
 void GameController::InitializeSnake(int len)
@@ -142,7 +178,7 @@ int GameController::GetWorldSizeY() const
 {
 	return _worldSizeY;
 }
-void GameController::SpawnFruit()
+void GameController::SpawnFruit(Fruit type)
 {
 	std::uniform_int_distribution<int> distX(0, _worldSizeX - 1);
 	std::uniform_int_distribution<int> distY(0, _worldSizeY - 1);
@@ -151,5 +187,5 @@ void GameController::SpawnFruit()
 	{
 		tentativePos = { distX(_rnd), distY(_rnd) };
 	}
-	_fruits.insert({ tentativePos, Fruit::GROWTH_FRUIT });
+	_fruits.insert({ tentativePos, type });
 }
