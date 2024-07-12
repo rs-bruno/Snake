@@ -268,7 +268,8 @@ HRESULT MainApp::OnRender()
                 (snakeBlock.x + 1) * blockSize,
                 (snakeBlock.y + 1) * blockSize
             );
-            m_pRenderTarget->FillRectangle(&rectangle1, m_pCornflowerBlueBrush);
+            auto snakeColor = _gameController.GameOver() ? m_pRedBrush : m_pCornflowerBlueBrush;
+            m_pRenderTarget->FillRectangle(&rectangle1, snakeColor);
         }
 
         // Draw a grid.

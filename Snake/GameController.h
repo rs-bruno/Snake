@@ -45,7 +45,8 @@ private:
     float _baseSpeed = 1.0f;
     float _userSpeed = 10.0f; // multiplies _baseSpeed
     Direction _snakeDir = Direction::RIGHT;
-    int lifes = 1;
+    bool _allowDirChange = true;
+    int _lives = 1;
 public:
     list<Position> _snakeBody;
     map<Position, Fruit> _fruits;
@@ -61,7 +62,9 @@ public:
     int GetBlockSize() const;
     int GetWorldSizeX() const;
     int GetWorldSizeY() const;
+    bool GameOver() const;
 
 private:
+    bool CollisionTest(Position pos); // TODO: use where appropriate
     void SpawnFruit(Fruit type = Fruit::GROWTH_FRUIT);
 };

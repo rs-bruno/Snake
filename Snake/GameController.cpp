@@ -31,6 +31,7 @@ void GameController::ChangeState(CycleState newState)
 		{
 			_baseSpeed = 1.0f;
 			_specialFruitTimer = {};
+			_lives = 1;
 			InitializeSnake(2);
 			SpawnFruit();
 		}
@@ -42,8 +43,11 @@ void GameController::ChangeState(CycleState newState)
 }
 void GameController::ChangeHeadingDirection(Direction newDirection)
 {
-	if (Opposite(newDirection) != _snakeDir)
+	if (_allowDirChange && _snakeDir != Opposite(newDirection))
+	{
+		_allowDirChange = false;
 		_snakeDir = newDirection;
+	}
 }
 void GameController::ChangeUserSpeed(float newUserSpeed)
 {
@@ -97,6 +101,18 @@ void GameController::Update()
 		}
 		_snakeHead.x = _snakeHead.x < 0 ? (_worldSizeX - 1) : _snakeHead.x % _worldSizeX;
 		_snakeHead.y = _snakeHead.y < 0 ? (_worldSizeY - 1) : _snakeHead.y % _worldSizeY;
+
+		if (CollisionTest(_snakeHead))
+		{
+			_lives--;
+			if (_lives == 0)
+			{
+				_fruits.clear();
+				ChangeState(CycleState::STOPPED);
+				return;
+			}
+		}
+
 		_snakeBody.push_front(_snakeHead);
 
 		if (_fruits.count(_snakeHead) > 0)
@@ -110,7 +126,7 @@ void GameController::Update()
 			{
 				if (type == Fruit::LIFE_FRUIT)
 				{
-					lifes++;
+					_lives++;
 				}
 				else if (type == Fruit::SLOW_FRUIT)
 				{
@@ -124,6 +140,8 @@ void GameController::Update()
 		{
 			_snakeBody.pop_back();
 		}
+
+		_allowDirChange = true; // allow only after advancing one block to prevent inplace collitions
 	}
 }
 void GameController::ResizeWorld(int blocksX, int blocksY)
@@ -154,7 +172,9 @@ void GameController::ResizeWorld(int blocksX, int blocksY)
 }
 void GameController::InitializeSnake(int len)
 {
+
 	_snakeDir = Direction::RIGHT;
+	bool _allowDirChange = true;
 	_snakeBody.clear();
 	Position _snakeStartingHead;
 	_snakeStartingHead.x = _worldSizeX / 2;
@@ -178,12 +198,20 @@ int GameController::GetWorldSizeY() const
 {
 	return _worldSizeY;
 }
+bool GameController::GameOver() const
+{
+	return _state == CycleState::STOPPED && _lives == 0;
+}
+bool GameController::CollisionTest(Position pos)
+{
+	return std::find(_snakeBody.begin(), _snakeBody.end(), pos) != _snakeBody.end();
+}
 void GameController::SpawnFruit(Fruit type)
 {
 	std::uniform_int_distribution<int> distX(0, _worldSizeX - 1);
 	std::uniform_int_distribution<int> distY(0, _worldSizeY - 1);
 	Position tentativePos{ distX(_rnd), distY(_rnd) };
-	while (std::find(_snakeBody.begin(), _snakeBody.end(), tentativePos) != _snakeBody.end() || _fruits.count(tentativePos) > 0)
+	while (CollisionTest(tentativePos) || _fruits.count(tentativePos) > 0)
 	{
 		tentativePos = { distX(_rnd), distY(_rnd) };
 	}
