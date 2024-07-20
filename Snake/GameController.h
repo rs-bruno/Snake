@@ -41,8 +41,9 @@ private:
     CycleState _state = CycleState::STOPPED;
     FILETIME _lastUpdate = {};
     FILETIME _lastMove = {};
+    REFERENCE_TIME _appSecondTimer = {};
+    REFERENCE_TIME _playSecondTimer = {};
     REFERENCE_TIME _specialFruitTimer = {};
-    REFERENCE_TIME _speedUpTimer = {};
     float _baseSpeed = 1.0f;
     float _userSpeed = 10.0f; // multiplies _baseSpeed
     Direction _snakeDir = Direction::RIGHT;

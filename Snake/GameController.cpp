@@ -60,16 +60,21 @@ void GameController::Update()
 	GetSystemTimeAsFileTime(&now);
 	REFERENCE_TIME elapsed = now - _lastUpdate;
 	_lastUpdate = now;
-	_fps = (float)MS_TO_100NS(1000) / elapsed;
+	_appSecondTimer += elapsed;
+	if (_appSecondTimer > MS_TO_100NS(1000))
+	{
+		_fps = MS_TO_100NS(1000) / elapsed;
+		_appSecondTimer = {};
+	}
 
 	if (_state == CycleState::RUNNING)
 	{
 		_specialFruitTimer += elapsed;
-		_speedUpTimer += elapsed;
-		if (_speedUpTimer > MS_TO_100NS(1500))
+		_playSecondTimer += elapsed;
+		if (_playSecondTimer > MS_TO_100NS(1000))
 		{
-			_baseSpeed += 0.05f;
-			_speedUpTimer = {};
+			_baseSpeed += 0.025f;
+			_playSecondTimer = {};
 		}
 		if (_specialFruitTimer > MS_TO_100NS(30 * 1000))
 		{

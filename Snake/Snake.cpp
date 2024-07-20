@@ -322,11 +322,11 @@ HRESULT MainApp::OnRender()
         // Draw text over the frame.
         D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 500.f, 100.f);
         wstringstream fps;
-        fps << std::setprecision(4) << _gameController.GetUpdateRate() 
+        fps << std::fixed << std::setprecision(0) << _gameController.GetUpdateRate()
             << L"\n"
-            << _gameController.GetLives()
+            << _gameController._snakeBody.size()
             << L"\n"
-            << _gameController._snakeBody.size();
+            << _gameController.GetLives();
         m_pRenderTarget->DrawText(
             fps.str().c_str(),
             fps.str().length(),
