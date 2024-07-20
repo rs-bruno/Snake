@@ -231,7 +231,7 @@ HRESULT MainApp::CreateDeviceResources()
                 DWRITE_FONT_WEIGHT_NORMAL,
                 DWRITE_FONT_STYLE_NORMAL,
                 DWRITE_FONT_STRETCH_NORMAL,
-                10.0f * dpi / 72.0f, // 10pt font size
+                12.0f * dpi / 72.0f, // 12pt font size
                 L"en-US",
                 &m_pTextFormat
             );
@@ -248,6 +248,7 @@ void MainApp::DiscardDeviceResources()
     SafeRelease(&m_pRedBrush);
     SafeRelease(&m_pGreenBrush);
     SafeRelease(&m_pBlueBrush);
+    SafeRelease(&m_pWhiteBrush);
 }
 HRESULT MainApp::OnRender()
 {
@@ -259,6 +260,7 @@ HRESULT MainApp::OnRender()
         _gameController.Update();
 
         m_pRenderTarget->BeginDraw();
+
         m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
         m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
 
@@ -317,13 +319,13 @@ HRESULT MainApp::OnRender()
             );
         }
 
-        // Draw text over the frame
-        D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 100.f, 100.f);
+        // Draw text over the frame.
+        D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 500.f, 100.f);
         wstringstream fps;
         fps << std::setprecision(4) << _gameController.GetUpdateRate() 
-            << L" - "
+            << L"\n"
             << _gameController.GetLives()
-            << L" - "
+            << L"\n"
             << _gameController._snakeBody.size();
         m_pRenderTarget->DrawText(
             fps.str().c_str(),
