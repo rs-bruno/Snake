@@ -148,6 +148,14 @@ HRESULT MainApp::CreateDeviceIndependentResources()
     // Create a Direct2D factory.
     hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
 
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    // Create DirectWrite factory.
+    hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+        __uuidof(IDWriteFactory),
+        reinterpret_cast<IUnknown**>(&m_pDirectWriteFactory));
+
     return hr;
 }
 HRESULT MainApp::CreateDeviceResources()
@@ -173,7 +181,6 @@ HRESULT MainApp::CreateDeviceResources()
 
         if (SUCCEEDED(hr))
         {
-            // Create a gray brush.
             hr = m_pRenderTarget->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::LightSlateGray),
                 &m_pLightSlateGrayBrush
@@ -181,7 +188,6 @@ HRESULT MainApp::CreateDeviceResources()
         }
         if (SUCCEEDED(hr))
         {
-            // Create a blue brush.
             hr = m_pRenderTarget->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::CornflowerBlue),
                 &m_pCornflowerBlueBrush
@@ -189,7 +195,6 @@ HRESULT MainApp::CreateDeviceResources()
         }
         if (SUCCEEDED(hr))
         {
-            // Create a red brush.
             hr = m_pRenderTarget->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::Red),
                 &m_pRedBrush
@@ -197,7 +202,6 @@ HRESULT MainApp::CreateDeviceResources()
         }
         if (SUCCEEDED(hr))
         {
-            // Create a green brush.
             hr = m_pRenderTarget->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::GreenYellow),
                 &m_pGreenBrush
@@ -205,10 +209,31 @@ HRESULT MainApp::CreateDeviceResources()
         }
         if (SUCCEEDED(hr))
         {
-            // Create a blue brush.
             hr = m_pRenderTarget->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::DarkSlateBlue),
                 &m_pBlueBrush
+            );
+        }
+        if (SUCCEEDED(hr))
+        {
+            hr = m_pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::AntiqueWhite),
+                &m_pWhiteBrush
+            );
+        }
+
+        if (SUCCEEDED(hr))
+        {
+            float dpi = GetDpiForWindow(m_hwnd);
+            hr = m_pDirectWriteFactory->CreateTextFormat(
+                L"Arial",
+                NULL,
+                DWRITE_FONT_WEIGHT_NORMAL,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                10.0f * dpi / 72.0f, // 10pt font size
+                L"en-US",
+                &m_pTextFormat
             );
         }
     }
@@ -291,7 +316,23 @@ HRESULT MainApp::OnRender()
                 0.5f
             );
         }
-        
+
+        // Draw text over the frame
+        D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 100.f, 100.f);
+        wstringstream fps;
+        fps << std::setprecision(4) << _gameController.GetUpdateRate() 
+            << L" - "
+            << _gameController.GetLives()
+            << L" - "
+            << _gameController._snakeBody.size();
+        m_pRenderTarget->DrawText(
+            fps.str().c_str(),
+            fps.str().length(),
+            m_pTextFormat,
+            layoutRect,
+            m_pWhiteBrush
+        );
+
         hr = m_pRenderTarget->EndDraw();
 
         if (hr == D2DERR_RECREATE_TARGET)

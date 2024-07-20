@@ -60,6 +60,7 @@ void GameController::Update()
 	GetSystemTimeAsFileTime(&now);
 	REFERENCE_TIME elapsed = now - _lastUpdate;
 	_lastUpdate = now;
+	_fps = (float)MS_TO_100NS(1000) / elapsed;
 
 	if (_state == CycleState::RUNNING)
 	{
@@ -201,6 +202,14 @@ int GameController::GetWorldSizeY() const
 bool GameController::GameOver() const
 {
 	return _state == CycleState::STOPPED && _lives == 0;
+}
+float GameController::GetUpdateRate() const
+{
+	return _fps;
+}
+int GameController::GetLives() const
+{
+	return _lives;
 }
 bool GameController::CollisionTest(Position pos)
 {

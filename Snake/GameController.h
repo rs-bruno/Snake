@@ -33,6 +33,7 @@ enum Fruit
 class GameController
 {
 private:
+    float _fps;
     std::random_device _rnd;
     int _blockSize = 25; // dipx
     int _worldSizeX = 25; // blocks
@@ -63,6 +64,8 @@ public:
     int GetWorldSizeX() const;
     int GetWorldSizeY() const;
     bool GameOver() const;
+    float GetUpdateRate() const;
+    int GetLives() const;
 
 private:
     bool CollisionTest(Position pos); // TODO: use where appropriate

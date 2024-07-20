@@ -16,6 +16,9 @@ private:
     ID2D1SolidColorBrush* m_pRedBrush;
     ID2D1SolidColorBrush* m_pGreenBrush;
     ID2D1SolidColorBrush* m_pBlueBrush;
+    ID2D1SolidColorBrush* m_pWhiteBrush;
+    IDWriteFactory* m_pDirectWriteFactory;
+    IDWriteTextFormat* m_pTextFormat;
     GameController _gameController;
 public:
     MainApp();
