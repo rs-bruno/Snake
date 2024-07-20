@@ -66,15 +66,15 @@ void GameController::Update()
 	{
 		_specialFruitTimer += elapsed;
 		_speedUpTimer += elapsed;
-		if (_speedUpTimer > MS_TO_100NS(2000))
+		if (_speedUpTimer > MS_TO_100NS(1500))
 		{
-			_baseSpeed += 0.1f;
+			_baseSpeed += 0.05f;
 			_speedUpTimer = {};
 		}
-		if (_specialFruitTimer > MS_TO_100NS(10 * 1000))
+		if (_specialFruitTimer > MS_TO_100NS(30 * 1000))
 		{
 			std::uniform_int_distribution<int> dist(0, 100);
-			Fruit type = dist(_rnd) < 25 ? Fruit::LIFE_FRUIT : Fruit::SLOW_FRUIT;
+			Fruit type = dist(_rnd) < 35 ? Fruit::LIFE_FRUIT : Fruit::SLOW_FRUIT;
 			SpawnFruit(type);
 			_specialFruitTimer = {};
 		}
