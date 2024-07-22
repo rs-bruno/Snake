@@ -25,34 +25,31 @@ public:
     ~MainApp();
 
     // Register the window class and call methods for instantiating drawing resources
-    HRESULT Initialize();
+    void Initialize();
 
     // Process and dispatch messages
     void RunMessageLoop();
 
 private:
-    // Initialize device-independent resources.
-    HRESULT CreateDeviceIndependentResources();
-
     // Initialize device-dependent resources.
-    HRESULT CreateDeviceResources();
+    void CreateDeviceResources();
 
     // Release device-dependent resource.
     void DiscardDeviceResources();
 
     // Draw content.
-    HRESULT OnRender();
-
-    // Resize the render target and world representation
-    void OnResize(
-        UINT width,
-        UINT height
-    );
+    void OnRender();
 
     // Resize the window
     void OnResizing(
         WPARAM wParam,
         LPRECT prect
+    );
+
+    // Resize the render target and world representation
+    void OnResize(
+        UINT width,
+        UINT height
     );
 
     // The windows procedure.
