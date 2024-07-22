@@ -287,20 +287,48 @@ void MainApp::OnRender()
     }
 
     // Draw text over the frame.
-    D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 500.f, 100.f);
-    wstringstream fps;
-    fps << std::fixed << std::setprecision(0) << _gameController.GetUpdateRate()
-        << L"\n"
-        << _gameController._snakeBody.size()
-        << L"\n"
-        << _gameController.GetLives();
-    m_pRenderTarget->DrawText(
-        fps.str().c_str(),
-        fps.str().length(),
-        m_pTextFormat,
-        layoutRect,
-        m_pWhiteBrush
-    );
+    D2D1_RECT_F textRect = D2D1::RectF(0.f, 0.f, 500.f, 500.f);
+    wstringstream textToDraw;
+
+    GUIState guiState = _gameController.GetGUIState();
+    if (guiState.Overlay)
+    {
+        textToDraw
+            << L"press f11 to hide overlay" << L"\n"
+            << L"fps: " << std::fixed << std::setprecision(2) << _gameController.GetUpdateRate() << L"\n"
+            << L"score: " << _gameController._snakeBody.size() << L"\n"
+            << L"lives: " << _gameController.GetLives()
+            << L"\n\n";
+    }
+    if (guiState.Init || guiState.Paused || guiState.GameOver)
+    {
+        textToDraw
+            << (guiState.Paused ? L"game paused" :
+                guiState.GameOver ? L"game over" :
+                L"game start")
+            << L"\n"
+            << L"press 'space' to "
+            << (guiState.Paused ? L"resume" :
+                guiState.GameOver ? L"restart" :
+                L"start")
+            << L"\n\n";
+
+        if (guiState.Init)
+        {
+            textToDraw
+                << L"use 'wasd' to move, use 'p' to pause";
+        }
+    }
+    if (textToDraw.str().length() > 0)
+    {
+        m_pRenderTarget->DrawText(
+            textToDraw.str().c_str(),
+            textToDraw.str().length(),
+            m_pTextFormat,
+            textRect,
+            m_pWhiteBrush
+        );
+    }
 
     HRESULT hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET)
@@ -404,6 +432,10 @@ LRESULT CALLBACK MainApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 else if (wParam == 'P')
                 {
                     pDemoApp->_gameController.ChangeState(CycleState::PAUSED);
+                }
+                else if (wParam == VK_F11)
+                {
+                    pDemoApp->_gameController.ChangeOverlayState();
                 }
                 else
                 {

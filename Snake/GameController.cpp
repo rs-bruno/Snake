@@ -216,6 +216,19 @@ int GameController::GetLives() const
 {
 	return _lives;
 }
+GUIState GameController::GetGUIState() const
+{
+	GUIState st;
+	st.Overlay = _showOverlay;
+	st.Init = _state == CycleState::STOPPED;
+	st.Paused = _state == CycleState::PAUSED;
+	st.GameOver = st.Init && _lives == 0;
+	return st;
+}
+void GameController::ChangeOverlayState()
+{
+	_showOverlay = !_showOverlay;
+}
 bool GameController::CollisionTest(Position pos)
 {
 	return std::find(_snakeBody.begin(), _snakeBody.end(), pos) != _snakeBody.end();

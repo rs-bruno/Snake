@@ -29,10 +29,19 @@ enum Fruit
     LIFE_FRUIT,
 };
 
+struct GUIState
+{
+    bool Overlay;
+    bool Init;
+    bool Paused;
+    bool GameOver;
+};
+
 // Game controller class
 class GameController
 {
 private:
+    bool _showOverlay = true;
     float _fps;
     std::random_device _rnd;
     int _blockSize = 25; // dipx
@@ -67,6 +76,8 @@ public:
     bool GameOver() const;
     float GetUpdateRate() const;
     int GetLives() const;
+    GUIState GetGUIState() const;
+    void ChangeOverlayState();
 
 private:
     bool CollisionTest(Position pos); // TODO: use where appropriate
