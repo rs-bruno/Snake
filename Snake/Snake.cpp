@@ -294,7 +294,7 @@ void MainApp::OnRender()
     if (guiState.Overlay)
     {
         textToDraw
-            << L"press f11 to hide overlay" << L"\n"
+            << L"press 'f11' to hide overlay" << L"\n"
             << L"fps: " << std::fixed << std::setprecision(2) << _gameController.GetUpdateRate() << L"\n"
             << L"score: " << _gameController._snakeBody.size() << L"\n"
             << L"lives: " << _gameController.GetLives()
@@ -425,7 +425,7 @@ LRESULT CALLBACK MainApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
             {
             case WM_KEYDOWN:
             {
-                if (wParam == VK_SPACE) 
+                if (wParam == VK_SPACE)
                 {
                     pDemoApp->_gameController.ChangeState(CycleState::RUNNING);
                 }

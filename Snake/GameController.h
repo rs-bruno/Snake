@@ -55,8 +55,10 @@ private:
     REFERENCE_TIME _specialFruitTimer = {};
     float _baseSpeed = 1.0f;
     float _userSpeed = 10.0f; // multiplies _baseSpeed
+    float _minBaseSpeed = 1.0f;
+    float _maxBaseSpeed = 2.5f;
     Direction _snakeDir = Direction::RIGHT;
-    bool _allowDirChange = true;
+    Direction _lastMoveDir = Direction::RIGHT;
     int _lives = 1;
 public:
     list<Position> _snakeBody;

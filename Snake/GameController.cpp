@@ -43,9 +43,8 @@ void GameController::ChangeState(CycleState newState)
 }
 void GameController::ChangeHeadingDirection(Direction newDirection)
 {
-	if (_allowDirChange && _snakeDir != Opposite(newDirection))
+	if (newDirection != Opposite(_lastMoveDir))
 	{
-		_allowDirChange = false;
 		_snakeDir = newDirection;
 	}
 }
@@ -73,18 +72,20 @@ void GameController::Update()
 		_playSecondTimer += elapsed;
 		if (_playSecondTimer > MS_TO_100NS(1000))
 		{
-			_baseSpeed += 0.025f;
+			float _speedDelta = (_maxBaseSpeed - _minBaseSpeed) / 30; // reaches max speed in a special fruit period
+			_baseSpeed += _speedDelta;
+			_baseSpeed = min(_baseSpeed, _maxBaseSpeed);
 			_playSecondTimer = {};
 		}
 		if (_specialFruitTimer > MS_TO_100NS(30 * 1000))
 		{
 			std::uniform_int_distribution<int> dist(0, 100);
-			Fruit type = dist(_rnd) < 35 ? Fruit::LIFE_FRUIT : Fruit::SLOW_FRUIT;
+			Fruit type = dist(_rnd) < 50 ? Fruit::LIFE_FRUIT : Fruit::SLOW_FRUIT;
 			SpawnFruit(type);
 			_specialFruitTimer = {};
 		}
 
-		if (now - _lastMove < MS_TO_100NS(1000 / (_baseSpeed * _userSpeed)))
+		if (now - _lastMove < MS_TO_100NS(1000) / (_baseSpeed * _userSpeed))
 			return;
 		_lastMove = now;
 
@@ -107,6 +108,35 @@ void GameController::Update()
 		}
 		_snakeHead.x = _snakeHead.x < 0 ? (_worldSizeX - 1) : _snakeHead.x % _worldSizeX;
 		_snakeHead.y = _snakeHead.y < 0 ? (_worldSizeY - 1) : _snakeHead.y % _worldSizeY;
+		_lastMoveDir = _snakeDir;
+
+		if (_fruits.count(_snakeHead) > 0)
+		{
+			Fruit type = _fruits[_snakeHead];
+			if (type == Fruit::GROWTH_FRUIT)
+			{
+				_snakeBody.push_front(_snakeHead);
+				SpawnFruit(); // spawn before erasing current fruit so the new is in a different location
+				_snakeBody.pop_front();
+			}
+			else
+			{
+				if (type == Fruit::LIFE_FRUIT)
+				{
+					_lives++;
+				}
+				else if (type == Fruit::SLOW_FRUIT)
+				{
+					_baseSpeed = _minBaseSpeed;
+				}
+				_snakeBody.pop_back(); // these fruits should mantain snake size
+			}
+			_fruits.erase(_snakeHead);
+		} 
+		else
+		{
+			_snakeBody.pop_back();
+		}
 
 		if (CollisionTest(_snakeHead))
 		{
@@ -118,36 +148,7 @@ void GameController::Update()
 				return;
 			}
 		}
-
 		_snakeBody.push_front(_snakeHead);
-
-		if (_fruits.count(_snakeHead) > 0)
-		{
-			Fruit type = _fruits[_snakeHead];
-			if (type == Fruit::GROWTH_FRUIT)
-			{
-				SpawnFruit(); // spawn before erasing current fruit so the new is in a different location
-			}
-			else
-			{
-				if (type == Fruit::LIFE_FRUIT)
-				{
-					_lives++;
-				}
-				else if (type == Fruit::SLOW_FRUIT)
-				{
-					_baseSpeed = 1.0f;
-				}
-				_snakeBody.pop_back(); // these fruits should mantain snake size
-			}
-			_fruits.erase(_snakeHead);
-		} 
-		else
-		{
-			_snakeBody.pop_back();
-		}
-
-		_allowDirChange = true; // allow only after advancing one block to prevent inplace collitions
 	}
 }
 void GameController::ResizeWorld(int blocksX, int blocksY)
